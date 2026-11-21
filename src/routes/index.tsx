@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { seedCategories } from "@/data/seed-products";
 import { getWhatsAppEnquiryUrl, getWhatsAppFeedbackUrl } from "@/lib/whatsapp";
 
 const businessName = "JKS CROP HEALTH";
@@ -222,13 +223,20 @@ export function SitePage({ page }: { page: SitePageName }) {
       return;
     }
 
-    const productsSection = document.getElementById("products");
-    if (!productsSection) return;
+    const shoppingSections = ["products", "fodder-seeds"]
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null);
+    if (shoppingSections.length === 0) return;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      setProductsInView(entry?.isIntersecting ?? false);
+    const visibleSections = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visibleSections.add(entry.target);
+        else visibleSections.delete(entry.target);
+      }
+      setProductsInView(visibleSections.size > 0);
     });
-    observer.observe(productsSection);
+    shoppingSections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
   }, [page]);
@@ -446,8 +454,7 @@ export function SitePage({ page }: { page: SitePageName }) {
                 <div className="jks-section-header">
                   <div>
                     <p className="jks-eyebrow">
-                      <span className="jks-eyebrow-dash" />
-                      A focused agricultural range
+                      <span className="jks-eyebrow-dash" />A focused agricultural range
                     </p>
                     <h2 id="about-more-title">
                       Practical categories.
@@ -486,17 +493,26 @@ export function SitePage({ page }: { page: SitePageName }) {
                   <article>
                     <Wheat aria-hidden="true" />
                     <h3>Seeds for agricultural needs</h3>
-                    <p>We offer agricultural seeds wholesale for farmers and businesses seeking dependable crop essentials.</p>
+                    <p>
+                      We offer agricultural seeds wholesale for farmers and businesses seeking
+                      dependable crop essentials.
+                    </p>
                   </article>
                   <article>
                     <Droplets aria-hidden="true" />
                     <h3>Silicon-based spreaders</h3>
-                    <p>Our range includes silicon adjuvant concentrates and spreader products for crop care.</p>
+                    <p>
+                      Our range includes silicon adjuvant concentrates and spreader products for
+                      crop care.
+                    </p>
                   </article>
                   <article>
                     <Handshake aria-hidden="true" />
                     <h3>Support from Hisar</h3>
-                    <p>Contact our Hisar team for questions about products, availability, and the range we offer.</p>
+                    <p>
+                      Contact our Hisar team for questions about products, availability, and the
+                      range we offer.
+                    </p>
                   </article>
                 </div>
                 <a className="jks-text-link" href="/products">
@@ -534,7 +550,16 @@ export function SitePage({ page }: { page: SitePageName }) {
 
                 <div className="jks-product-grid">
                   {products.map(
-                    ({ number, icon: Icon, imageSrc, imageAlt, imageFit, title, description, featured }) => (
+                    ({
+                      number,
+                      icon: Icon,
+                      imageSrc,
+                      imageAlt,
+                      imageFit,
+                      title,
+                      description,
+                      featured,
+                    }) => (
                       <article
                         className={`jks-product${featured ? " jks-product-featured" : ""}`}
                         key={title}
@@ -544,8 +569,14 @@ export function SitePage({ page }: { page: SitePageName }) {
                           <ArrowUpRight aria-hidden="true" />
                         </div>
                         {imageSrc ? (
-                          <span className={`jks-product-image${imageFit === "cover" ? " jks-product-image-cover" : ""}`}>
-                            <img alt={imageAlt ?? `${title} product`} loading="lazy" src={imageSrc} />
+                          <span
+                            className={`jks-product-image${imageFit === "cover" ? " jks-product-image-cover" : ""}`}
+                          >
+                            <img
+                              alt={imageAlt ?? `${title} product`}
+                              loading="lazy"
+                              src={imageSrc}
+                            />
                           </span>
                         ) : (
                           <span className="jks-product-icon" aria-hidden="true">
@@ -595,6 +626,102 @@ export function SitePage({ page }: { page: SitePageName }) {
               </div>
             </section>
           </>
+        )}
+
+        {(page === "home" || page === "products") && (
+          <section
+            aria-labelledby="seed-catalog-title"
+            className="jks-fodder jks-section"
+            id="fodder-seeds"
+          >
+            <div className="jks-container">
+              <div className="jks-section-header jks-fodder-heading">
+                <div>
+                  <p className="jks-eyebrow">
+                    <span className="jks-eyebrow-dash" />
+                    Agricultural seed range
+                  </p>
+                  <h2 id="seed-catalog-title">
+                    Seeds for every
+                    <br />
+                    <span>growing need.</span>
+                  </h2>
+                </div>
+                <p className="jks-section-aside">
+                  Browse fodder, field crop, and kitchen garden seeds. Tap any product enquiry to
+                  share its name and your details with our team on WhatsApp.
+                </p>
+              </div>
+
+              <div className="jks-seed-categories">
+                {seedCategories.map((category) => (
+                  <section
+                    aria-label={category.title}
+                    className="jks-seed-category"
+                    key={category.title}
+                  >
+                    <div className="jks-seed-category-heading">
+                      <h3>{category.title}</h3>
+                      {category.subtitle ? <p>{category.subtitle}</p> : null}
+                    </div>
+                    <div className="jks-fodder-grid">
+                      {category.products.map(({ title, images, details }) => (
+                        <article className="jks-fodder-card" key={`${title}-${images[0]?.src}`}>
+                          <div
+                            className="jks-fodder-image"
+                            data-image-count={images.length > 1 ? "multiple" : "single"}
+                          >
+                            {images.map(({ src, alt }) => (
+                              <img alt={alt} key={src} loading="lazy" src={src} />
+                            ))}
+                          </div>
+                          <div className="jks-fodder-card-body">
+                            <Button
+                              className="jks-fodder-enquire"
+                              onClick={() => setEnquiryProduct(title)}
+                              size="sm"
+                              variant="gold"
+                            >
+                              Enquire about {title} <ArrowRight aria-hidden="true" />
+                            </Button>
+                            <h4>{title}</h4>
+                            {details ? <p>{details}</p> : null}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+
+              <div aria-label="C and F partners" className="jks-fodder-partners">
+                <p className="jks-detail-label">C&amp;F by</p>
+                <div className="jks-fodder-partner">
+                  <img
+                    alt="Puregene Agri Seeds brand mark"
+                    loading="lazy"
+                    src="/images/fodder/puregene-agri-logo.webp"
+                  />
+                  <p>
+                    <strong>PUREGENE AGRITECH SEEDS PVT LTD</strong>
+                    <span>Jaipur</span>
+                  </p>
+                </div>
+                <span aria-hidden="true" className="jks-fodder-partner-divider" />
+                <div className="jks-fodder-partner">
+                  <img
+                    alt="Supergene Seeds brand mark"
+                    loading="lazy"
+                    src="/images/fodder/supergene-logo.webp"
+                  />
+                  <p>
+                    <strong>SUPERGENE INFOTECH LLP</strong>
+                    <span>Jaipur</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
 
         {page === "home" && (
@@ -651,7 +778,11 @@ export function SitePage({ page }: { page: SitePageName }) {
                   <div className="jks-rating-card">
                     <span className="jks-detail-label">Share your experience</span>
                     <strong>How was your visit?</strong>
-                    <div aria-label="Rate this website from 1 to 5 stars" className="jks-rating-stars" role="group">
+                    <div
+                      aria-label="Rate this website from 1 to 5 stars"
+                      className="jks-rating-stars"
+                      role="group"
+                    >
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           aria-label={`${star} ${star === 1 ? "star" : "stars"}`}
@@ -672,10 +803,13 @@ export function SitePage({ page }: { page: SitePageName }) {
                         rel="noreferrer"
                         target="_blank"
                       >
-                        Share {visitorRating}-star rating on WhatsApp <ArrowUpRight aria-hidden="true" />
+                        Share {visitorRating}-star rating on WhatsApp{" "}
+                        <ArrowUpRight aria-hidden="true" />
                       </a>
                     ) : (
-                      <span className="jks-rating-hint">Choose a star to share your rating with us.</span>
+                      <span className="jks-rating-hint">
+                        Choose a star to share your rating with us.
+                      </span>
                     )}
                   </div>
                 ) : null}
@@ -683,7 +817,10 @@ export function SitePage({ page }: { page: SitePageName }) {
               <div className="jks-faq-list">
                 {frequentlyAskedQuestions.map(({ question, answer }) => (
                   <details key={question}>
-                    <summary>{question}<ArrowDown aria-hidden="true" /></summary>
+                    <summary>
+                      {question}
+                      <ArrowDown aria-hidden="true" />
+                    </summary>
                     <p>{answer}</p>
                   </details>
                 ))}

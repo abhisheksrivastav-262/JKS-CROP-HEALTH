@@ -179,11 +179,11 @@ export const seedCategories: SeedCategory[] = [
     title: "Paddy Seeds",
     subtitle: "Available varieties: 1509, 1121, 1692, 1847, and 1718.",
     products: [
-      { title: "Paddy Seeds · 1509", images: [image(45, "Paddy seed packet")] },
-      { title: "Paddy Seeds · 1121", images: [image(46, "Paddy seed packet")] },
-      { title: "Paddy Seeds · 1692", images: [image(45, "Paddy seed packet")] },
-      { title: "Paddy Seeds · 1847", images: [image(46, "Paddy seed packet")] },
-      { title: "Paddy Seeds · 1718", images: [image(45, "Paddy seed packet")] },
+      {
+        title: "Paddy Seeds · 1509, 1121, 1692, 1847 & 1718",
+        images: [image(45, "Paddy seed packet"), image(46, "Paddy seed packet")],
+        details: "Available varieties: 1509 · 1121 · 1692 · 1847 · 1718",
+      },
     ],
   },
   {

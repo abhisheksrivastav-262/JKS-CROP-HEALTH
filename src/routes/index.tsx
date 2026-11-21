@@ -61,7 +61,7 @@ const products = [
   {
     number: "03",
     icon: FlaskConical,
-    title: "Deen Baan",
+    title: "Teen Baan",
     imageSrc: "/images/deen-baan-500ml.webp",
     description: "Silicon Super Spreader · 500 ml.",
   },
@@ -77,7 +77,7 @@ const products = [
     icon: FlaskConical,
     title: "Silicon Super Spreader",
     imageSrc: "/images/deen-baan-500ml.webp",
-    imageAlt: "Deen Baan silicon super spreader bottle",
+    imageAlt: "Teen Baan silicon super spreader bottle",
     description:
       "Manufacturing and supply of silicon super spreader products for agricultural crop care.",
   },
@@ -114,7 +114,7 @@ const frequentlyAskedQuestions = [
   {
     question: "What products does JKS Crop Health offer?",
     answer:
-      "Our range includes agricultural seeds wholesale, silicon-based spreader products, and crop health products such as Magic Boond, Deen Baan, and ESPA-80.",
+      "Our range includes agricultural seeds wholesale, silicon-based spreader products, and crop health products such as Magic Boond, Teen Baan, and ESPA-80.",
   },
   {
     question: "What is Magic Boond?",
@@ -161,9 +161,68 @@ const navigation = [
   { label: "Home", href: "/" },
   { label: "About us", href: "/about" },
   { label: "Products", href: "/products" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Services", href: "/services" },
   { label: "Contact", href: "/contact" },
 ];
+
+type GallerySource = { title: string; src: string; alt: string; category: string };
+type GalleryItem = {
+  title: string;
+  category: string;
+  images: { src: string; alt: string }[];
+};
+
+const fodderGalleryItems: GallerySource[] = (
+  [
+  ["Dairy Power 555", "/images/fodder/dairy-power-555.webp"],
+  ["Multicut Jowar", "/images/fodder/multicut-blue.webp"],
+  ["Multicut Jowar", "/images/fodder/multicut-red.webp"],
+  ["Milkaraj Hybrid Sudan Grass", "/images/fodder/milkaraj-hybrid-sudan-grass.webp"],
+  ["Milkaraj 3 kg", "/images/fodder/milkaraj-3kg.webp"],
+  ["Chara Beej", "/images/fodder/chara-beej.webp"],
+  ["Supergene Fodder Seed", "/images/fodder/supergene-fodder-seed.webp"],
+  ] as [string, string][]
+).map(([title, src]) => ({ title, src, alt: title, category: "Fodder & forage seeds" }));
+
+const uniqueGallerySources: GallerySource[] = Array.from(
+  new Map<string, GallerySource>(
+    [
+      ...products.map((product) => ({
+        title: product.title,
+        src: product.imageSrc,
+        alt: product.imageAlt ?? product.title,
+        category: "Crop health products",
+      })),
+      ...seedCategories.flatMap((category) =>
+        category.products.flatMap((product) =>
+          product.images.map((productImage) => ({
+            title: product.title,
+            src: productImage.src,
+            alt: productImage.alt,
+            category: category.title,
+          })),
+        ),
+      ),
+      ...fodderGalleryItems,
+    ].map((item) => [item.src, item] as [string, GallerySource]),
+  ).values(),
+);
+
+const galleryItems = Array.from(
+  uniqueGallerySources.reduce((itemsByProduct, item) => {
+    const key = `${item.category}:${item.title}`;
+    const existing = itemsByProduct.get(key);
+    if (existing) existing.images.push({ src: item.src, alt: item.alt });
+    else
+      itemsByProduct.set(key, {
+        title: item.title,
+        category: item.category,
+        images: [{ src: item.src, alt: item.alt }],
+      });
+    return itemsByProduct;
+  }, new Map<string, GalleryItem>()).values(),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -208,7 +267,7 @@ function Brand({ footer = false }: { footer?: boolean }) {
   );
 }
 
-export type SitePageName = "home" | "about" | "products" | "services" | "contact";
+export type SitePageName = "home" | "about" | "products" | "gallery" | "services" | "contact";
 
 export function SitePage({ page }: { page: SitePageName }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -318,6 +377,55 @@ export function SitePage({ page }: { page: SitePageName }) {
       </header>
 
       <main>
+        {page === "gallery" && (
+          <section aria-labelledby="gallery-title" className="jks-gallery jks-section">
+            <div className="jks-container">
+              <div className="jks-section-header">
+                <div>
+                  <p className="jks-eyebrow">
+                    <span className="jks-eyebrow-dash" />
+                    Product gallery
+                  </p>
+                  <h1 id="gallery-title">
+                    Our products,
+                    <br />
+                    <span>in full view.</span>
+                  </h1>
+                </div>
+                <p className="jks-section-aside">
+                  Browse our seed packs, crop health products, and product posters. Each unique
+                  image appears once.
+                </p>
+              </div>
+              <div className="jks-gallery-grid">
+                {galleryItems.map(({ title, images, category }) => (
+                  <figure className="jks-gallery-card" key={`${category}-${title}`}>
+                    <div
+                      className="jks-gallery-image"
+                      data-image-count={images.length > 1 ? "multiple" : "single"}
+                    >
+                      {images.map(({ src, alt }) => (
+                        <img alt={alt} key={src} loading="lazy" src={src} />
+                      ))}
+                    </div>
+                    <figcaption>
+                      <span>{category}</span>
+                      <strong>{title}</strong>
+                      <Button
+                        className="jks-fodder-enquire"
+                        onClick={() => setEnquiryProduct(title)}
+                        size="sm"
+                        variant="gold"
+                      >
+                        Enquire about {title} <ArrowRight aria-hidden="true" />
+                      </Button>
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
         {page === "home" && (
           <>
             <section aria-labelledby="hero-title" className="jks-hero" id="home">

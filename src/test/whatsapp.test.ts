@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getWhatsAppEnquiryUrl } from "@/lib/whatsapp";
 
 describe("WhatsApp enquiries", () => {
-  it.each(["Seeds Wholesale", "Magic Boond", "Deen Baan", "ESPA-80", "Silicon Super Spreader"])(
+  it.each(["Seeds Wholesale", "Magic Boond", "Teen Baan", "ESPA-80", "Silicon Super Spreader"])(
     "sends a %s enquiry to the existing WhatsApp number with the product name",
     (productName) => {
       const url = new URL(getWhatsAppEnquiryUrl(productName));

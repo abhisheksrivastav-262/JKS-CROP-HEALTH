@@ -76,15 +76,6 @@ const products = [
     imageSrc: "/images/espa-80-1l.webp",
     description: "All Purpose Spray Adjuvant Concentrate for plants and crops · 1 Litre.",
   },
-  {
-    number: "05",
-    icon: FlaskConical,
-    title: "Silicon Super Spreader",
-    imageSrc: "/images/deen-baan-500ml.webp",
-    imageAlt: "Teen Baan silicon super spreader bottle",
-    description:
-      "Manufacturing and supply of silicon super spreader products for agricultural crop care.",
-  },
 ];
 
 const assurances = [
@@ -833,7 +824,7 @@ export function SitePage({ page }: { page: SitePageName }) {
                           key={title}
                         >
                           <div className="jks-product-topline">
-                            <span>{number} / 05</span>
+                            <span>{number} / {String(products.length).padStart(2, "0")}</span>
                             <ArrowUpRight aria-hidden="true" />
                           </div>
                           {imageSrc ? (

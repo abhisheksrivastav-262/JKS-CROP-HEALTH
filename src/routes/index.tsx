@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import {
   ArrowDown,
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Check,
@@ -38,6 +39,10 @@ import { getWhatsAppEnquiryUrl, getWhatsAppFeedbackUrl } from "@/lib/whatsapp";
 
 const businessName = "JKS CROP HEALTH";
 const phoneNumber = "918059963113";
+const productVideos = [
+  { title: "तीन बान", src: "/videos/teen-baan.mp4" },
+  { title: "एक बूँद", src: "/videos/ek-boond.mp4" },
+];
 const products = [
   {
     number: "01",
@@ -289,6 +294,7 @@ export function SitePage({ page }: { page: SitePageName }) {
   const [enquiryProduct, setEnquiryProduct] = useState<string | null>(null);
   const [selectedGalleryCategory, setSelectedGalleryCategory] = useState("All products");
   const [selectedProductCategory, setSelectedProductCategory] = useState("All products");
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [productsInView, setProductsInView] = useState(false);
   const [visitorRating, setVisitorRating] = useState(0);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -544,6 +550,70 @@ export function SitePage({ page }: { page: SitePageName }) {
                 <div>
                   <Sprout aria-hidden="true" />
                   <span>Crop health products</span>
+                </div>
+              </div>
+            </section>
+            <section aria-labelledby="video-showcase-title" className="jks-video-showcase jks-section">
+              <div className="jks-container">
+                <div className="jks-section-header jks-video-showcase-header">
+                  <div>
+                    <p className="jks-eyebrow">
+                      <span className="jks-eyebrow-dash" />Product videos
+                    </p>
+                    <h2 id="video-showcase-title">
+                      See our products
+                      <br />
+                      <span>in action.</span>
+                    </h2>
+                  </div>
+                  <div aria-label="Choose a product video" className="jks-video-tabs" role="group">
+                    {productVideos.map((video, index) => (
+                      <button
+                        aria-pressed={selectedVideoIndex === index}
+                        className={selectedVideoIndex === index ? "is-active" : ""}
+                        key={video.title}
+                        onClick={() => setSelectedVideoIndex(index)}
+                        type="button"
+                      >
+                        {video.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="jks-video-player-wrap">
+                  <video
+                    aria-label={`${productVideos[selectedVideoIndex].title} product video`}
+                    className="jks-video-player"
+                    controls
+                    key={productVideos[selectedVideoIndex].src}
+                    playsInline
+                    preload="metadata"
+                    src={productVideos[selectedVideoIndex].src}
+                  >
+                    Your browser does not support embedded videos.
+                  </video>
+                  <div className="jks-video-caption">
+                    <h3>{productVideos[selectedVideoIndex].title}</h3>
+                    <div className="jks-video-nav">
+                      <button
+                        aria-label="Previous product video"
+                        onClick={() =>
+                          setSelectedVideoIndex((index) => (index + productVideos.length - 1) % productVideos.length)
+                        }
+                        type="button"
+                      >
+                        <ArrowLeft aria-hidden="true" />
+                      </button>
+                      <span>{selectedVideoIndex + 1} / {productVideos.length}</span>
+                      <button
+                        aria-label="Next product video"
+                        onClick={() => setSelectedVideoIndex((index) => (index + 1) % productVideos.length)}
+                        type="button"
+                      >
+                        <ArrowRight aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>

@@ -602,6 +602,108 @@
   background: var(--jks-line);
 }
 
+.jks-video-showcase {
+  padding-block: clamp(3rem, 5.5vw, 4.5rem);
+  background: var(--jks-sage-light);
+}
+
+.jks-video-showcase-header {
+  align-items: end;
+  margin-bottom: 2rem;
+}
+
+.jks-video-showcase-header h2 {
+  margin-bottom: 0;
+}
+
+.jks-video-showcase-header h2 span {
+  color: var(--jks-green);
+}
+
+.jks-video-tabs,
+.jks-video-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.jks-video-tabs button,
+.jks-video-nav button {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  color: var(--jks-forest);
+  background: var(--jks-white);
+  border: 1px solid var(--jks-line);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.jks-video-tabs button.is-active {
+  color: var(--jks-white);
+  background: var(--jks-forest);
+  border-color: var(--jks-forest);
+}
+
+.jks-video-player-wrap {
+  width: min(100%, 24rem);
+  margin-inline: auto;
+  padding: 0.8rem;
+  background: var(--jks-white);
+  border: 1px solid var(--jks-line);
+  border-radius: 0.5rem;
+  box-shadow: 0 1rem 2.5rem color-mix(in oklch, var(--jks-forest) 10%, transparent);
+}
+
+.jks-video-player {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: min(55vh, 28rem);
+  margin-inline: auto;
+  background: #07140d;
+  border-radius: 0.3rem;
+  object-fit: contain;
+}
+
+.jks-video-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.25rem 0.1rem;
+}
+
+.jks-video-caption h3 {
+  margin: 0;
+  color: var(--jks-forest);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.jks-video-nav button {
+  width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0;
+}
+
+.jks-video-nav button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.jks-video-nav span {
+  color: var(--jks-copy);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .jks-section {
   padding-block: clamp(4.8rem, 8.7vw, 7.6rem);
 }

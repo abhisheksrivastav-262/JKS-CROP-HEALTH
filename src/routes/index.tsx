@@ -45,7 +45,6 @@ const products = [
     title: "Seeds Wholesale",
     imageSrc: "/images/hisar-crop-fields.webp",
     imageAlt: "Green agricultural fields representing seed and crop supply",
-    imageFit: "cover",
     description:
       "Agricultural seed wholesale for farmers and businesses looking for dependable crop essentials.",
   },
@@ -175,13 +174,13 @@ type GalleryItem = {
 
 const fodderGalleryItems: GallerySource[] = (
   [
-  ["Dairy Power 555", "/images/fodder/dairy-power-555.webp"],
-  ["Multicut Jowar", "/images/fodder/multicut-blue.webp"],
-  ["Multicut Jowar", "/images/fodder/multicut-red.webp"],
-  ["Milkaraj Hybrid Sudan Grass", "/images/fodder/milkaraj-hybrid-sudan-grass.webp"],
-  ["Milkaraj 3 kg", "/images/fodder/milkaraj-3kg.webp"],
-  ["Chara Beej", "/images/fodder/chara-beej.webp"],
-  ["Supergene Fodder Seed", "/images/fodder/supergene-fodder-seed.webp"],
+    ["Dairy Power 555", "/images/fodder/dairy-power-555.webp"],
+    ["Multicut Jowar", "/images/fodder/multicut-blue.webp"],
+    ["Multicut Jowar", "/images/fodder/multicut-red.webp"],
+    ["Milkaraj Hybrid Sudan Grass", "/images/fodder/milkaraj-hybrid-sudan-grass.webp"],
+    ["Milkaraj 3 kg", "/images/fodder/milkaraj-3kg.webp"],
+    ["Chara Beej", "/images/fodder/chara-beej.webp"],
+    ["Supergene Fodder Seed", "/images/fodder/supergene-fodder-seed.webp"],
   ] as [string, string][]
 ).map(([title, src]) => ({ title, src, alt: title, category: "Fodder & forage seeds" }));
 
@@ -210,19 +209,35 @@ const uniqueGallerySources: GallerySource[] = Array.from(
 );
 
 const galleryItems = Array.from(
-  uniqueGallerySources.reduce((itemsByProduct, item) => {
-    const key = `${item.category}:${item.title}`;
-    const existing = itemsByProduct.get(key);
-    if (existing) existing.images.push({ src: item.src, alt: item.alt });
-    else
-      itemsByProduct.set(key, {
-        title: item.title,
-        category: item.category,
-        images: [{ src: item.src, alt: item.alt }],
-      });
-    return itemsByProduct;
-  }, new Map<string, GalleryItem>()).values(),
+  uniqueGallerySources
+    .reduce((itemsByProduct, item) => {
+      const key = `${item.category}:${item.title}`;
+      const existing = itemsByProduct.get(key);
+      if (existing) existing.images.push({ src: item.src, alt: item.alt });
+      else
+        itemsByProduct.set(key, {
+          title: item.title,
+          category: item.category,
+          images: [{ src: item.src, alt: item.alt }],
+        });
+      return itemsByProduct;
+    }, new Map<string, GalleryItem>())
+    .values(),
 );
+const galleryCategories = Array.from(new Set(galleryItems.map((item) => item.category)));
+const productRangeCategories = [
+  {
+    title: "All products",
+    count:
+      products.length +
+      seedCategories.reduce((total, category) => total + category.products.length, 0),
+  },
+  { title: "Crop Health Products", count: products.length },
+  ...seedCategories.map((category) => ({
+    title: category.title,
+    count: category.products.length,
+  })),
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -272,6 +287,8 @@ export type SitePageName = "home" | "about" | "products" | "gallery" | "services
 export function SitePage({ page }: { page: SitePageName }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [enquiryProduct, setEnquiryProduct] = useState<string | null>(null);
+  const [selectedGalleryCategory, setSelectedGalleryCategory] = useState("All products");
+  const [selectedProductCategory, setSelectedProductCategory] = useState("All products");
   const [productsInView, setProductsInView] = useState(false);
   const [visitorRating, setVisitorRating] = useState(0);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -397,31 +414,60 @@ export function SitePage({ page }: { page: SitePageName }) {
                   image appears once.
                 </p>
               </div>
-              <div className="jks-gallery-grid">
-                {galleryItems.map(({ title, images, category }) => (
-                  <figure className="jks-gallery-card" key={`${category}-${title}`}>
-                    <div
-                      className="jks-gallery-image"
-                      data-image-count={images.length > 1 ? "multiple" : "single"}
+              <nav aria-label="Gallery categories" className="jks-gallery-categories">
+                {[
+                  { title: "All products", count: galleryItems.length },
+                  ...galleryCategories.map((category) => ({
+                    title: category,
+                    count: galleryItems.filter((item) => item.category === category).length,
+                  })),
+                ].map(({ title, count }) => {
+                  const isSelected = selectedGalleryCategory === title;
+                  return (
+                    <button
+                      aria-pressed={isSelected}
+                      className={`jks-gallery-category${isSelected ? " is-active" : ""}`}
+                      key={title}
+                      onClick={() => setSelectedGalleryCategory(title)}
+                      type="button"
                     >
-                      {images.map(({ src, alt }) => (
-                        <img alt={alt} key={src} loading="lazy" src={src} />
-                      ))}
-                    </div>
-                    <figcaption>
-                      <span>{category}</span>
-                      <strong>{title}</strong>
-                      <Button
-                        className="jks-fodder-enquire"
-                        onClick={() => setEnquiryProduct(title)}
-                        size="sm"
-                        variant="gold"
+                      <span>{title}</span>
+                      <small>{count}</small>
+                    </button>
+                  );
+                })}
+              </nav>
+              <div aria-live="polite" className="jks-gallery-grid">
+                {galleryItems
+                  .filter(
+                    (item) =>
+                      selectedGalleryCategory === "All products" ||
+                      item.category === selectedGalleryCategory,
+                  )
+                  .map(({ title, images, category }) => (
+                    <figure className="jks-gallery-card" key={`${category}-${title}`}>
+                      <div
+                        className="jks-gallery-image"
+                        data-image-count={images.length > 1 ? "multiple" : "single"}
                       >
-                        Enquire about {title} <ArrowRight aria-hidden="true" />
-                      </Button>
-                    </figcaption>
-                  </figure>
-                ))}
+                        {images.map(({ src, alt }) => (
+                          <img alt={alt} key={src} loading="lazy" src={src} />
+                        ))}
+                      </div>
+                      <figcaption>
+                        <span>{category}</span>
+                        <strong>{title}</strong>
+                        <Button
+                          className="jks-fodder-enquire"
+                          onClick={() => setEnquiryProduct(title)}
+                          size="sm"
+                          variant="gold"
+                        >
+                          Enquire about {title} <ArrowRight aria-hidden="true" />
+                        </Button>
+                      </figcaption>
+                    </figure>
+                  ))}
               </div>
             </div>
           </section>
@@ -556,6 +602,28 @@ export function SitePage({ page }: { page: SitePageName }) {
                   </div>
                 </div>
               </div>
+              <div className="jks-container">
+                <article
+                  aria-labelledby="about-sales-contact-name"
+                  className="jks-sales-contact jks-about-sales-contact"
+                >
+                  <div className="jks-sales-contact-image">
+                    <img
+                      alt="Dr. Yaman Sharma, Development Manager for Haryana"
+                      loading="lazy"
+                      src="/images/sales/dr-yaman-sharma.webp"
+                    />
+                  </div>
+                  <div className="jks-sales-contact-details">
+                    <span className="jks-detail-label">Sales · Haryana</span>
+                    <h3 id="about-sales-contact-name">Dr. Yaman Sharma</h3>
+                    <p>B.Sc. Agricultural</p>
+                    <p>Punjab University</p>
+                    <p>Development Manager (Haryana)</p>
+                    <a href="tel:+919817999899">Mobile: 9817999899</a>
+                  </div>
+                </article>
+              </div>
             </section>
             <section aria-labelledby="about-more-title" className="jks-about-more jks-section">
               <div className="jks-container">
@@ -656,77 +724,98 @@ export function SitePage({ page }: { page: SitePageName }) {
                   </p>
                 </div>
 
-                <div className="jks-product-grid">
-                  {products.map(
-                    ({
-                      number,
-                      icon: Icon,
-                      imageSrc,
-                      imageAlt,
-                      imageFit,
-                      title,
-                      description,
-                      featured,
-                    }) => (
-                      <article
-                        className={`jks-product${featured ? " jks-product-featured" : ""}`}
+                <nav
+                  aria-label="Product categories"
+                  className="jks-gallery-categories jks-product-category-tabs"
+                >
+                  {productRangeCategories.map(({ title, count }) => {
+                    const isSelected = selectedProductCategory === title;
+                    return (
+                      <button
+                        aria-pressed={isSelected}
+                        className={`jks-gallery-category${isSelected ? " is-active" : ""}`}
                         key={title}
+                        onClick={() => setSelectedProductCategory(title)}
+                        type="button"
                       >
-                        <div className="jks-product-topline">
-                          <span>{number} / 05</span>
-                          <ArrowUpRight aria-hidden="true" />
-                        </div>
-                        {imageSrc ? (
-                          <span
-                            className={`jks-product-image${imageFit === "cover" ? " jks-product-image-cover" : ""}`}
-                          >
-                            <img
-                              alt={imageAlt ?? `${title} product`}
-                              loading="lazy"
-                              src={imageSrc}
-                            />
-                          </span>
-                        ) : (
-                          <span className="jks-product-icon" aria-hidden="true">
-                            <Icon />
-                          </span>
-                        )}
-                        <div className="jks-product-actions">
-                          <Button
-                            className="jks-product-enquire"
-                            onClick={() => setEnquiryProduct(title)}
-                            size="sm"
-                            variant="gold"
-                          >
-                            Enquire about {title} <ArrowRight aria-hidden="true" />
-                          </Button>
-                          <div className="jks-product-quick-actions">
-                            <Button asChild size="sm" variant="whatsapp">
-                              <a
-                                href={getWhatsAppEnquiryUrl(title)}
-                                rel="noreferrer"
-                                target="_blank"
-                              >
-                                <MessageCircle aria-hidden="true" /> WhatsApp
-                              </a>
-                            </Button>
-                            <Button asChild size="sm" variant="outline">
-                              <a href="tel:+918059963113">
-                                <Phone aria-hidden="true" /> Call
-                              </a>
-                            </Button>
+                        <span>{title}</span>
+                        <small>{count}</small>
+                      </button>
+                    );
+                  })}
+                </nav>
+
+                {(selectedProductCategory === "All products" ||
+                  selectedProductCategory === "Crop Health Products") && (
+                  <div className="jks-product-grid">
+                    {products.map(
+                      ({
+                        number,
+                        icon: Icon,
+                        imageSrc,
+                        imageAlt,
+                        title,
+                        description,
+                        featured,
+                      }) => (
+                        <article
+                          className={`jks-product${featured ? " jks-product-featured" : ""}`}
+                          key={title}
+                        >
+                          <div className="jks-product-topline">
+                            <span>{number} / 05</span>
+                            <ArrowUpRight aria-hidden="true" />
                           </div>
-                        </div>
-                        {featured ? (
-                          <span className="jks-product-tag">Featured product</span>
-                        ) : null}
-                        <h3>{title}</h3>
-                        <p>{description}</p>
-                      </article>
-                    ),
-                  )}
-                </div>
-                {page === "home" ? (
+                          {imageSrc ? (
+                            <span className="jks-product-image">
+                              <img
+                                alt={imageAlt ?? `${title} product`}
+                                loading="lazy"
+                                src={imageSrc}
+                              />
+                            </span>
+                          ) : (
+                            <span className="jks-product-icon" aria-hidden="true">
+                              <Icon />
+                            </span>
+                          )}
+                          <div className="jks-product-actions">
+                            <Button
+                              className="jks-product-enquire"
+                              onClick={() => setEnquiryProduct(title)}
+                              size="sm"
+                              variant="gold"
+                            >
+                              Enquire about {title} <ArrowRight aria-hidden="true" />
+                            </Button>
+                            <div className="jks-product-quick-actions">
+                              <Button asChild size="sm" variant="whatsapp">
+                                <a
+                                  href={getWhatsAppEnquiryUrl(title)}
+                                  rel="noreferrer"
+                                  target="_blank"
+                                >
+                                  <MessageCircle aria-hidden="true" /> WhatsApp
+                                </a>
+                              </Button>
+                              <Button asChild size="sm" variant="outline">
+                                <a href="tel:+918059963113">
+                                  <Phone aria-hidden="true" /> Call
+                                </a>
+                              </Button>
+                            </div>
+                          </div>
+                          {featured ? (
+                            <span className="jks-product-tag">Featured product</span>
+                          ) : null}
+                          <h3>{title}</h3>
+                          <p>{description}</p>
+                        </article>
+                      ),
+                    )}
+                  </div>
+                )}
+                {page === "home" && selectedProductCategory === "All products" ? (
                   <a className="jks-text-link jks-home-products-link" href="/products">
                     View all products <ArrowRight aria-hidden="true" />
                   </a>
@@ -736,101 +825,108 @@ export function SitePage({ page }: { page: SitePageName }) {
           </>
         )}
 
-        {(page === "home" || page === "products") && (
-          <section
-            aria-labelledby="seed-catalog-title"
-            className="jks-fodder jks-section"
-            id="fodder-seeds"
-          >
-            <div className="jks-container">
-              <div className="jks-section-header jks-fodder-heading">
-                <div>
-                  <p className="jks-eyebrow">
-                    <span className="jks-eyebrow-dash" />
-                    Agricultural seed range
+        {(page === "home" || page === "products") &&
+          selectedProductCategory !== "Crop Health Products" && (
+            <section
+              aria-labelledby="seed-catalog-title"
+              className="jks-fodder jks-section"
+              id="fodder-seeds"
+            >
+              <div className="jks-container">
+                <div className="jks-section-header jks-fodder-heading">
+                  <div>
+                    <p className="jks-eyebrow">
+                      <span className="jks-eyebrow-dash" />
+                      Agricultural seed range
+                    </p>
+                    <h2 id="seed-catalog-title">
+                      Seeds for every
+                      <br />
+                      <span>growing need.</span>
+                    </h2>
+                  </div>
+                  <p className="jks-section-aside">
+                    Browse fodder, field crop, and kitchen garden seeds. Tap any product enquiry to
+                    share its name and your details with our team on WhatsApp.
                   </p>
-                  <h2 id="seed-catalog-title">
-                    Seeds for every
-                    <br />
-                    <span>growing need.</span>
-                  </h2>
                 </div>
-                <p className="jks-section-aside">
-                  Browse fodder, field crop, and kitchen garden seeds. Tap any product enquiry to
-                  share its name and your details with our team on WhatsApp.
-                </p>
-              </div>
 
-              <div className="jks-seed-categories">
-                {seedCategories.map((category) => (
-                  <section
-                    aria-label={category.title}
-                    className="jks-seed-category"
-                    key={category.title}
-                  >
-                    <div className="jks-seed-category-heading">
-                      <h3>{category.title}</h3>
-                      {category.subtitle ? <p>{category.subtitle}</p> : null}
-                    </div>
-                    <div className="jks-fodder-grid">
-                      {category.products.map(({ title, images, details }) => (
-                        <article className="jks-fodder-card" key={`${title}-${images[0]?.src}`}>
-                          <div
-                            className="jks-fodder-image"
-                            data-image-count={images.length > 1 ? "multiple" : "single"}
-                          >
-                            {images.map(({ src, alt }) => (
-                              <img alt={alt} key={src} loading="lazy" src={src} />
-                            ))}
-                          </div>
-                          <div className="jks-fodder-card-body">
-                            <Button
-                              className="jks-fodder-enquire"
-                              onClick={() => setEnquiryProduct(title)}
-                              size="sm"
-                              variant="gold"
-                            >
-                              Enquire about {title} <ArrowRight aria-hidden="true" />
-                            </Button>
-                            <h4>{title}</h4>
-                            {details ? <p>{details}</p> : null}
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
+                <div className="jks-seed-categories">
+                  {seedCategories
+                    .filter(
+                      (category) =>
+                        selectedProductCategory === "All products" ||
+                        category.title === selectedProductCategory,
+                    )
+                    .map((category) => (
+                      <section
+                        aria-label={category.title}
+                        className="jks-seed-category"
+                        key={category.title}
+                      >
+                        <div className="jks-seed-category-heading">
+                          <h3>{category.title}</h3>
+                          {category.subtitle ? <p>{category.subtitle}</p> : null}
+                        </div>
+                        <div className="jks-fodder-grid">
+                          {category.products.map(({ title, images, details }) => (
+                            <article className="jks-fodder-card" key={`${title}-${images[0]?.src}`}>
+                              <div
+                                className="jks-fodder-image"
+                                data-image-count={images.length > 1 ? "multiple" : "single"}
+                              >
+                                {images.map(({ src, alt }) => (
+                                  <img alt={alt} key={src} loading="lazy" src={src} />
+                                ))}
+                              </div>
+                              <div className="jks-fodder-card-body">
+                                <Button
+                                  className="jks-fodder-enquire"
+                                  onClick={() => setEnquiryProduct(title)}
+                                  size="sm"
+                                  variant="gold"
+                                >
+                                  Enquire about {title} <ArrowRight aria-hidden="true" />
+                                </Button>
+                                <h4>{title}</h4>
+                                {details ? <p>{details}</p> : null}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                </div>
 
-              <div aria-label="C and F partners" className="jks-fodder-partners">
-                <p className="jks-detail-label">C&amp;F by</p>
-                <div className="jks-fodder-partner">
-                  <img
-                    alt="Puregene Agri Seeds brand mark"
-                    loading="lazy"
-                    src="/images/fodder/puregene-agri-logo.webp"
-                  />
-                  <p>
-                    <strong>PUREGENE AGRITECH SEEDS PVT LTD</strong>
-                    <span>Jaipur</span>
-                  </p>
-                </div>
-                <span aria-hidden="true" className="jks-fodder-partner-divider" />
-                <div className="jks-fodder-partner">
-                  <img
-                    alt="Supergene Seeds brand mark"
-                    loading="lazy"
-                    src="/images/fodder/supergene-logo.webp"
-                  />
-                  <p>
-                    <strong>SUPERGENE INFOTECH LLP</strong>
-                    <span>Jaipur</span>
-                  </p>
+                <div aria-label="C and F partners" className="jks-fodder-partners">
+                  <p className="jks-detail-label">C&amp;F by</p>
+                  <div className="jks-fodder-partner">
+                    <img
+                      alt="Puregene Agri Seeds brand mark"
+                      loading="lazy"
+                      src="/images/fodder/puregene-agri-logo.webp"
+                    />
+                    <p>
+                      <strong>PUREGENE AGRITECH SEEDS PVT LTD</strong>
+                      <span>Jaipur</span>
+                    </p>
+                  </div>
+                  <span aria-hidden="true" className="jks-fodder-partner-divider" />
+                  <div className="jks-fodder-partner">
+                    <img
+                      alt="Supergene Seeds brand mark"
+                      loading="lazy"
+                      src="/images/fodder/supergene-logo.webp"
+                    />
+                    <p>
+                      <strong>SUPERGENE INFOTECH LLP</strong>
+                      <span>Jaipur</span>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
         {page === "home" && (
           <section aria-labelledby="benefits-title" className="jks-benefits jks-section">
@@ -1207,6 +1303,23 @@ export function SitePage({ page }: { page: SitePageName }) {
                     </Button>
                   </form>
                 </div>
+                <article aria-labelledby="sales-contact-name" className="jks-sales-contact">
+                  <div className="jks-sales-contact-image">
+                    <img
+                      alt="Dr. Yaman Sharma, Development Manager for Haryana"
+                      loading="lazy"
+                      src="/images/sales/dr-yaman-sharma.webp"
+                    />
+                  </div>
+                  <div className="jks-sales-contact-details">
+                    <span className="jks-detail-label">Sales · Haryana</span>
+                    <h3 id="sales-contact-name">Dr. Yaman Sharma</h3>
+                    <p>B.Sc. Agricultural</p>
+                    <p>Punjab University</p>
+                    <p>Development Manager (Haryana)</p>
+                    <a href="tel:+919817999899">Mobile: 9817999899</a>
+                  </div>
+                </article>
               </div>
             </section>
           </>

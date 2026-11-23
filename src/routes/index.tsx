@@ -41,7 +41,7 @@ const businessName = "JKS CROP HEALTH";
 const phoneNumber = "918059963113";
 const productVideos = [
   { title: "तीन बान", src: "/videos/teen-baan.mp4" },
-  { title: "एक बूँद", src: "/videos/ek-boond.mp4" },
+  { title: "मैजिक बूँद", src: "/videos/ek-boond.mp4" },
 ];
 const products = [
   {
